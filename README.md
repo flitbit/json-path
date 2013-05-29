@@ -3,4 +3,4 @@ json-path [![Build Status](https://travis-ci.org/flitbit/json-path.png)](http://
 
 JSON-Path utility (XPath for JSON) for nodejs and modern browsers.
 
-INITIAL COMMIT; Wait for build success!
+JSON-Path builds on JSON Pointer (RFC 6901), which means that any valid JSON pointer is also a valid JSON-Path reference.
