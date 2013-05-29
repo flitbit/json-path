@@ -129,4 +129,4 @@ res = p.resolve(data, {
 expect(res).to.contain(data.store.book[0].category);
 expect(res).to.contain(data.store.book[2].category);
 
-p = jpath.parseSelector("[..#/book[*][{#/price >= 10}]]");
+// p = jpath.parseSelector("[..#/book[*][{#/price >= 10}]]");
