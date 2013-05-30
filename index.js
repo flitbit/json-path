@@ -317,7 +317,7 @@
 					break;
 				}
 				case '.': {
-					expect(source, state, '..#');
+					expect(source, state, '..');
 					++state.cursor;
 					prepareExhaustiveDescent(source, state);
 					break;

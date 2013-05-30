@@ -305,112 +305,7 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 	});
 
 	describe('using the data defined in prior work (http://goessner.net/articles/JsonPath/)', function() {
-		
-
-		describe('the JSON-Path #/store/book[*][#/author]', function() {
-			
-
-			it('selects the authors of all books', function() {
-				var data = { 
-					store: 
-					{
-						book: [
-						{ 
-							category: "reference",
-							author: "Nigel Rees",
-							title: "Sayings of the Century",
-							price: 8.95
-						},
-						{ 
-							category: "fiction",
-							author: "Evelyn Waugh",
-							title: "Sword of Honour",
-							price: 12.99
-						},
-						{ 
-							category: "fiction",
-							author: "Herman Melville",
-							title: "Moby Dick",
-							isbn: "0-553-21311-3",
-							price: 8.99
-						},
-						{ 
-							category: "fiction",
-							author: "J. R. R. Tolkien",
-							title: "The Lord of the Rings",
-							isbn: "0-395-19395-8",
-							price: 22.99
-						}
-						],
-						bicycle: 
-						{
-							color: "red",
-							price: 19.95
-						}
-					}
-				};
-				var p = JsonPath.create("#/store/book[*][#/author]");
-				var res = p.resolve(data);
-				expect(res).to.contain('Evelyn Waugh');
-				expect(res).to.contain('Nigel Rees');
-				expect(res).to.contain('Herman Melville');
-				expect(res).to.contain('J. R. R. Tolkien');
-			});
-});
-
-	describe('the JSON-Path /store/book[*][/author]', function() {
-		it('selects the authors of all books', function() {
-			var data = { 
-				store: 
-				{
-					book: [
-					{ 
-						category: "reference",
-						author: "Nigel Rees",
-						title: "Sayings of the Century",
-						price: 8.95
-					},
-					{ 
-						category: "fiction",
-						author: "Evelyn Waugh",
-						title: "Sword of Honour",
-						price: 12.99
-					},
-					{ 
-						category: "fiction",
-						author: "Herman Melville",
-						title: "Moby Dick",
-						isbn: "0-553-21311-3",
-						price: 8.99
-					},
-					{ 
-						category: "fiction",
-						author: "J. R. R. Tolkien",
-						title: "The Lord of the Rings",
-						isbn: "0-395-19395-8",
-						price: 22.99
-					}
-					],
-					bicycle: 
-					{
-						color: "red",
-						price: 19.95
-					}
-				}
-			};
-			var p = JsonPath.create("/store/book[*][/author]");
-			var res = p.resolve(data);
-			expect(res).to.contain('Evelyn Waugh');
-			expect(res).to.contain('Nigel Rees');
-			expect(res).to.contain('Herman Melville');
-			expect(res).to.contain('J. R. R. Tolkien');
-		});
-});
-
-	describe('the JSON-Path ../author', function() {
-		
-
-		it('selects the authors of all books', function() {var data = { 
+		var data = { 
 			store: 
 			{
 				book: [
@@ -448,13 +343,86 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 				}
 			}
 		};
-		var p = JsonPath.create("..#/author");
-		var res = p.resolve(data);
-		expect(res).to.contain('Evelyn Waugh');
-		expect(res).to.contain('Nigel Rees');
-		expect(res).to.contain('Herman Melville');
-		expect(res).to.contain('J. R. R. Tolkien');
+
+		describe('the path #/store/book[*][#/author]', function() {
+			it('selects the authors of all books', function() {
+				var p = JsonPath.create("#/store/book[*][#/author]");
+				var res = p.resolve(data);
+				expect(res).to.contain('Evelyn Waugh');
+				expect(res).to.contain('Nigel Rees');
+				expect(res).to.contain('Herman Melville');
+				expect(res).to.contain('J. R. R. Tolkien');
+				expect(res).to.have.length(4);
+			});
+		});
+
+		describe('the path /store/book[*][/author]', function() {
+			it('selects the authors of all books', function() {
+				var p = JsonPath.create("/store/book[*][/author]");
+				var res = p.resolve(data);
+				expect(res).to.contain('Evelyn Waugh');
+				expect(res).to.contain('Nigel Rees');
+				expect(res).to.contain('Herman Melville');
+				expect(res).to.contain('J. R. R. Tolkien');
+				expect(res).to.have.length(4);
+			});
+		});
+
+		describe('the path ../author', function() {
+			it('selects the authors of all books', function() {
+				var p = JsonPath.create("..#/author");
+				var res = p.resolve(data);
+				expect(res).to.contain('Evelyn Waugh');
+				expect(res).to.contain('Nigel Rees');
+				expect(res).to.contain('Herman Melville');
+				expect(res).to.contain('J. R. R. Tolkien');
+				expect(res).to.have.length(4);
+			});
+		});
+
+		describe('the path ..#/author', function() {
+			it('selects the authors of all books', function() {
+				var p = JsonPath.create("..#/author");
+				var res = p.resolve(data);
+				expect(res).to.contain('Evelyn Waugh');
+				expect(res).to.contain('Nigel Rees');
+				expect(res).to.contain('Herman Melville');
+				expect(res).to.contain('J. R. R. Tolkien');
+				expect(res).to.have.length(4);
+			});
+		});
+
+		describe('the path #/store[*]', function() {
+			it('selects the items of the store', function() {
+				var p = JsonPath.create("#/store[*]");
+				var res = p.resolve(data);
+				expect(res).to.contain(data.store.book);
+				expect(res).to.contain(data.store.bicycle);
+				expect(res).to.have.length(2);
+			});
+		});
+
+		describe('the path #/store[..#/price]', function() {
+			it('selects the prices from all items in the store', function() {
+				var p = JsonPath.create("#/store[..#/price]"),
+				res = p.resolve(data);
+				expect(res).to.contain(8.95);
+				expect(res).to.contain(12.99);
+				expect(res).to.contain(8.99);
+				expect(res).to.contain(22.99);
+				expect(res).to.contain(19.95);
+				expect(res).to.have.length(5);
+			});
+		});
+
+		describe('the path ../book[2]', function() {
+			it('selects the third book', function() {
+				var p = JsonPath.create("../book[2]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][2]);
+				expect(res).to.have.length(1);
+			});
+		});
+
 	});
-	});
-});
 });
