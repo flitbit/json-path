@@ -303,32 +303,33 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			expect(unk).to.contain(null);
 		});
 	});
+});
 
-	describe('using the data defined in prior work (http://goessner.net/articles/JsonPath/)', function() {
-		var data = { 
-			store: 
+	describe('using the data defined in prior JSON-Path work (http://goessner.net/articles/JsonPath/)', function() {
+		var data = {
+			store:
 			{
 				book: [
-				{ 
+				{
 					category: "reference",
 					author: "Nigel Rees",
 					title: "Sayings of the Century",
 					price: 8.95
 				},
-				{ 
+				{
 					category: "fiction",
 					author: "Evelyn Waugh",
 					title: "Sword of Honour",
 					price: 12.99
 				},
-				{ 
+				{
 					category: "fiction",
 					author: "Herman Melville",
 					title: "Moby Dick",
 					isbn: "0-553-21311-3",
 					price: 8.99
 				},
-				{ 
+				{
 					category: "fiction",
 					author: "J. R. R. Tolkien",
 					title: "The Lord of the Rings",
@@ -336,25 +337,13 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 					price: 22.99
 				}
 				],
-				bicycle: 
+				bicycle:
 				{
 					color: "red",
 					price: 19.95
 				}
 			}
 		};
-
-		describe('the path #/store/book[*][#/author]', function() {
-			it('selects the authors of all books', function() {
-				var p = JsonPath.create("#/store/book[*][#/author]");
-				var res = p.resolve(data);
-				expect(res).to.contain('Evelyn Waugh');
-				expect(res).to.contain('Nigel Rees');
-				expect(res).to.contain('Herman Melville');
-				expect(res).to.contain('J. R. R. Tolkien');
-				expect(res).to.have.length(4);
-			});
-		});
 
 		describe('the path /store/book[*][/author]', function() {
 			it('selects the authors of all books', function() {
@@ -415,6 +404,24 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
+		describe('the path ../book[0]', function() {
+			it('selects the first book', function() {
+				var p = JsonPath.create("../book[0]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][0]);
+				expect(res).to.have.length(1);
+			});
+		});
+
+		describe('the path ../book[1]', function() {
+			it('selects the second book', function() {
+				var p = JsonPath.create("../book[1]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][1]);
+				expect(res).to.have.length(1);
+			});
+		});
+
 		describe('the path ../book[2]', function() {
 			it('selects the third book', function() {
 				var p = JsonPath.create("../book[2]"),
@@ -424,5 +431,63 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
+		describe('the path ../book[3]', function() {
+			it('selects the fourth book', function() {
+				var p = JsonPath.create("../book[3]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][3]);
+				expect(res).to.have.length(1);
+			});
+		});
+
+		describe('the path ../book[1, 3]', function() {
+			it('selects the second and fourth book', function() {
+				var p = JsonPath.create("../book[1, 3]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][1]);
+				expect(res).to.contain(data["store"]["book"][3]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+		describe('the path ../book[1..3]', function() {
+			it('selects the second thru fourth book', function() {
+				var p = JsonPath.create("../book[1..3]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][1]);
+				expect(res).to.contain(data["store"]["book"][2]);
+				expect(res).to.contain(data["store"]["book"][3]);
+				expect(res).to.have.length(3);
+			});
+		});
+
+		describe('the path /store/book[last]', function() {
+			it('selects the last book', function() {
+				var p = JsonPath.create("/store/book[last]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][data.store.book.length - 1]);
+				expect(res).to.have.length(1);
+			});
+		});
+
+		describe('the path /store/book[first]', function() {
+			it('selects the first book', function() {
+				var p = JsonPath.create("/store/book[first]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][0]);
+				expect(res).to.have.length(1);
+			});
+		});
+
+		describe('the path /store/book[first, 2, last]', function() {
+			it('selects the first, third, and last book', function() {
+				var p = JsonPath.create("/store/book[first, 2, last]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][0]);
+				expect(res).to.contain(data["store"]["book"][2]);
+				expect(res).to.contain(data["store"]["book"][data.store.book.length - 1]);
+				expect(res).to.have.length(3);
+			});
+		});
+
 	});
-});

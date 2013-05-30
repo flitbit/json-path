@@ -54,7 +54,24 @@
 		return -1;
 	}
 
-	function expectMatchingClose(source, cursor, closeCh) { 
+	function expectSequence(source, cursor, end, sequence) {
+		var c = cursor -1
+		, i = -1
+		, seqlen = sequence.length
+		;
+		if (end - cursor < seqlen) {
+			throw new Error("Expected `"
+				.concat(sequence, "` beginning at character ", cursor, "."));
+		}
+		while(++c < end && ++i < seqlen) {
+			if (source[c] !== sequence[i]) {
+				throw new Error("Unexpected character at position "
+					.concat(c, " expected `", sequence, "` beginning at position ", cursor, "."));
+			}
+		}
+	}
+
+	function expectMatchingClose(source, cursor, closeCh) {
 		var openCh = source[cursor]
 		, i = cursor
 		, len = source.length
@@ -71,7 +88,7 @@
 				}
 			}
 		}
-		if (stack.length) { 
+		if (stack.length) {
 			throw new Error(
 				'Expected `'.concat(source[0], '` to have a matching `', closeCh, '`.')
 				);
@@ -185,7 +202,7 @@
 		, infix = [];
 		;
 		while(++i < len) {
-			ch = expression[i]; 
+			ch = expression[i];
 			dbc([false], 'Expressions are not implemented in this version.');
 			switch(ch) {
 				case '#': {
@@ -251,37 +268,119 @@
 	}
 
 	function parseSelectByIndex(source, state) {
-		var cursor = state.cursor
-		, selectors = state.result
-		, i = -1
+		var cursor = state.cursor - 1
 		, len = source.length
-		, end = source.indexOf(']', cursor)
-		, it
-		, last
+		, end = source.indexOf(']', state.cursor)
+		, it = null
+		, num = null
+		, punct = false
 		, thems = []
 		if (end < cursor) {
 			end = len;
 		}
-		var n = source.substring(cursor, end).split(',');
-		len = n.length
-		while(++i < len) {
-			it = n[i].replace(/(^\s+|\s+$)/g, '');
-			if (it === 'last') {
-				thems.push(it);
-				last = true;
-			} else {
-				thems.push(parseInt(it));
+		while(++cursor < end) {
+			switch(source[cursor]) {
+				case ' ':
+				if (num !== null) {
+					thems.push({ kind: 'index', index: parseInt(source.substring(num, cursor))});
+					num = null;
+					punct = true;
+				}
+				break;
+				case ',': {
+					if (num !== null) {
+						thems.push({ kind: 'index', index: parseInt(source.substring(num, cursor))});
+						num = null;
+					}
+					if (punct) punct = false;
+					break;
+				}
+				case '.': {
+					expectSequence(source, cursor, end, '..');
+					if (num !== null) {
+						thems.push({ kind: 'sequence', index: parseInt(source.substring(num, cursor))});
+						num = null;
+					}
+					cursor++;
+					if (punct) punct = false;
+					break;
+				}
+				case '0': case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8': case '9': {
+					if (punct) {
+						throw Error("Unexpected numeral at position "
+							.concat(cursor, " expected punctuation."));
+					}
+					if (num === null) {
+						num = cursor;
+					}
+					break;
+				}
+				case 'l': {
+					if (punct) {
+						throw Error("Unexpected numeral at position "
+							.concat(cursor, " expected punctuation."));
+					}
+					expectSequence(source, cursor, end, 'last');
+					cursor += 3
+					thems.push('last');
+					break;
+				}
+				case 'f': {
+					if (punct) {
+						throw Error("Unexpected numeral at position "
+							.concat(cursor, " expected punctuation."));
+					}
+					expectSequence(source, cursor, end, 'first');
+					cursor += 4
+					thems.push('first');
+					break;
+				}
 			}
 		}
-		selectors.push(function(obj, accum) {
+		if (num !== null) {
+			thems.push({ kind: 'index', index: parseInt(source.substring(num, cursor))});
+		}
+		state.result.push(function(obj, accum) {
 			accum = accum || [];
 			if (Array.isArray(obj)) {
-				var i = -1;
+				var i = -1
+				, len = thems.length
+				, alen = obj.length
+				, s, slast
+				;
 				while(++i < len) {
-					if (last || thems[i] === 'last') {
-						accum.push(obj[obj.length-1]);
+					var it = thems[i];
+					if (typeof it === 'string') {
+						switch(it[0]) {
+							case 'c': {
+								accum.push(alen);
+								break;
+							}
+							case 'f': {
+								if (alen) {
+									accum.push(obj[0]);
+								}
+								break;
+							}
+							case 'l': {
+								if (alen) {
+									accum.push(obj[alen - 1]);
+								}
+								break;
+							}
+						}
 					} else {
-						accum.push(obj[thems[i]]);
+						if (it.index < alen) {
+							accum.push(obj[it.index]);
+							if (it.kind === 'sequence') {
+								s = it.index;
+								slast = (++i < len) ? thems[i].index : alen - 1;
+								while(++s <= slast) {
+									accum.push(obj[s]);
+								}
+							}
+						}
 					}
 				}
 			}
@@ -338,7 +437,14 @@
 					break;
 				}
 				case 'l': {
-					expect(source, state, 'last');
+					parseSelectByIndex(source, state);
+					break;
+				}
+				case 'f': {
+					parseSelectByIndex(source, state);
+					break;
+				}
+				case 'c': {
 					parseSelectByIndex(source, state);
 					break;
 				}
