@@ -96,7 +96,7 @@ Statement | Meaning
 Consider the following examples using the same preceding data:
 
 Path | Result
-___ | ___
+--- | ---
 `/store[..]/price` | Selects all prices, from books and the bicycle.
 `../isbn` | Selects all ISBN numbers, wherever they are in the structure.
 `/store/book[*][@]` | Selects all books, providing each to the user-supplied selection method.
