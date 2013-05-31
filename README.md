@@ -51,7 +51,7 @@ The pointer `/store/book/0` refers to the first book in the array of books (the 
 
 **Differentiator**
 
-The thing that makes JSON-Path different from JSON-Pointer is that you can do more than reference a single thing. Instead, you are able to `select` the things out of a structure, such as:
+The thing that makes JSON-Path different from JSON-Pointer is that you can do more than reference a single point in a structure. Instead, you are able to `select` many pieces of data out of a structure, such as:
 
 `/store/book[*]/price`
 ```javascript
@@ -65,3 +65,22 @@ Statement | Meaning
 `/store/book` | Get the book property from store. This is similar to `data.store.book` in javascript.
 `*` | Select any element (or property).
 `/price` | Select the price property.
+
+Starting with the original data, each statement refines the data, usually by selecting parts. As each statement is processed, it is given the results from the previous statement and may make further selections, until the final selections are returned to the caller. It works something like map-reduce; or if you like, something like list-comprehensions.
+
+**Distinguishing Statements**
+
+Statements are distinguished from one another using the square-brackets `[` and `]`. In many cases, the parser can infer where one statement ends and another begins, such as in the preceding example `/store/book[*]/price`. However, the parser understands the equivelant, fully specified path `[/store/book][*][/price]`.
+
+Paths can have as many distinct statements as you need to select just the right data. Since it extends JSON-Pointer, you must take care when your path contains square-brackets as part of property names such as the following contrived example:
+
+```javascript
+var data = {
+	'my[': {
+		contrived: {
+			'example]': { should: "mess with", your: "noodel" } } }
+};
+```
+
+In this data, the property names `my[` and `example]` are valid but would cuase ambiguities for either the parser or the processing of statements. In these cases, you must use the URI fragment identifier representation described in [RFC 6901 Section 6](http://tools.ietf.org/html/rfc6901). For instance, to access `data['my['].contrived['example]'].your` you would need the path `#/my%5B/contrived/example%5D/your`.
+
