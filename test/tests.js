@@ -490,4 +490,95 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
+		describe('the path /store/book[first(2)]', function() {
+			it('selects the first 2 books', function() {
+				var p = JsonPath.create("/store/book[first(2)]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][0]);
+				expect(res).to.contain(data["store"]["book"][1]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+
+		describe('the path /store/book[count]', function() {
+			it('selects the book count', function() {
+				var p = JsonPath.create("/store/book[count]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data.store.book.length);
+				expect(res).to.have.length(1);
+			});
+		});
+
+		describe('the path /store/book[last(2)]', function() {
+			it('selects the last 2 books', function() {
+				var p = JsonPath.create("/store/book[last(2)]"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][data.store.book.length - 1]);
+				expect(res).to.contain(data["store"]["book"][data.store.book.length - 2]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+		describe('the path /store/book[*]/isbn', function() {
+			it('selects the last 2 books', function() {
+				var p = JsonPath.create("/store/book[*]/isbn"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
+				expect(res).to.contain(data["store"]["book"][3]["isbn"]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+		describe('the path #/store/book[*]#/isbn', function() {
+			it('selects the last 2 books', function() {
+				var p = JsonPath.create("#/store/book[*]#/isbn"),
+				res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
+				expect(res).to.contain(data["store"]["book"][3]["isbn"]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+		describe('path with user-supplied selector #/store/book[*][@]', function() {
+			it('selects the books with prices greater than ten', function() {
+				var p = JsonPath.create("#/store/book[*][@]"),
+				res = p.resolve(data, function(obj, accum, sel) {
+					if (obj.price && obj.price < 10)
+						accum.push(obj);
+					return accum;
+				});
+				expect(res).to.contain(data["store"]["book"][0]);
+				expect(res).to.contain(data["store"]["book"][2]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+		describe('path with user-supplied selector #/store/book[*][@gt10]', function() {
+			it('selects the books with prices greater than ten', function() {
+				var p = JsonPath.create("#/store/book[*][@gt10]"),
+				res = p.resolve(data, { gt10: function(obj, accum, sel) {
+					if (obj.price && obj.price < 10)
+						accum.push(obj);
+					return accum;
+				}});
+				expect(res).to.contain(data["store"]["book"][0]);
+				expect(res).to.contain(data["store"]["book"][2]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+		describe('path with user-supplied selector followed by further path #/store/book[*][@gt10]/catagory', function() {
+			it('selects the books with prices greater than ten', function() {
+				var p = JsonPath.create("#/store/book[*][@gt10]/category"),
+				res = p.resolve(data, { gt10: function(obj, accum, sel) {
+					if (obj.price && obj.price < 10)
+						accum.push(obj);
+					return accum;
+				}});
+				expect(res).to.contain(data["store"]["book"][0].category);
+				expect(res).to.contain(data["store"]["book"][2].category);
+				expect(res).to.have.length(2);
+			});
+		});
 	});

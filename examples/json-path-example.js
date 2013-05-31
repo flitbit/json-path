@@ -129,4 +129,16 @@ res = p.resolve(data, {
 expect(res).to.contain(data.store.book[0].category);
 expect(res).to.contain(data.store.book[2].category);
 
+p = jpath.resolve(data, '/store/book[first(2)]');
+
+p = jpath.create("#/store/book[*][@]");
+var res = p.resolve(data, function(obj, accum, sel) {
+  if (obj.price && obj.price < 10)
+    accum.push(obj);
+  return accum;
+});
+expect(res).to.contain(data["store"]["book"][0]);
+expect(res).to.contain(data["store"]["book"][2]);
+expect(res).to.have.length(2);
+
 // p = jpath.parseSelector("[..#/book[*][{#/price >= 10}]]");

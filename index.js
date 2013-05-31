@@ -117,9 +117,7 @@
 	}
 
 	function expect(source, state, expected) {
-		dbc([source.indexOf(expected, state.cursor) == state.cursor], function() {
-			return "Expected `".concat(expected, '` at position ', state.cursor, '.');
-		});
+		expectSequence(source, state.cursor, source.length, expected);
 	}
 
 	function pipedSelect(datum, steps, fn) {
@@ -245,11 +243,18 @@
 		}
 		var n = source.substring(cursor, end);
 		state.result.push(function(data, accum, sel) {
+			var target;
 			if (data) {
-				dbc([sel, typeof sel[n] === "function"], function() {
-					return "Missing user-supplied function: `".concat(n, "`.");
-				});
-				return sel[n](data, accum, sel);
+ 				if (n.length === 0 && typeof sel === 'function') {
+ 					target = sel;
+				} else if (typeof sel === 'object' && sel) {
+					target = sel[n];
+				}
+				if (!target) {
+					throw new Error("Missing user-supplied function: `"
+						.concat((n.length) ? n : '@', "`."));
+				}
+				return target(data, accum, sel);
 			}
 			return accum;
 		});
@@ -267,6 +272,33 @@
 		return state.result;
 	}
 
+	function expectInteger(source, cursor, end) {
+		var c = cursor;
+		while(source[c] >= '0' && source[c] <= '9') c++;
+		if (c == cursor) {
+			throw new Error('Expected an integer at position '
+				.concat(c, '.'));
+		}
+		return c - cursor;
+	}
+
+	function parseArrayVerb(source, cursor, end, verb, thems){
+		var index = 1
+		, len;
+ 		expectSequence(source, cursor, end, verb);
+		cursor += (verb.length - 1);
+		if (source[cursor + 1] === '(') {
+			cursor += 2;
+			len = expectInteger(source, cursor, end);
+			index = parseInt(source.substring(cursor, cursor + len));
+			cursor += len;
+			expectSequence(source, cursor, end, ')');
+			++cursor;
+		}
+		thems.push({ kind: verb[0], index: index});
+		return cursor;
+	}
+
 	function parseSelectByIndex(source, state) {
 		var cursor = state.cursor - 1
 		, len = source.length
@@ -282,14 +314,14 @@
 			switch(source[cursor]) {
 				case ' ':
 				if (num !== null) {
-					thems.push({ kind: 'index', index: parseInt(source.substring(num, cursor))});
+					thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor))});
 					num = null;
 					punct = true;
 				}
 				break;
 				case ',': {
 					if (num !== null) {
-						thems.push({ kind: 'index', index: parseInt(source.substring(num, cursor))});
+						thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor))});
 						num = null;
 					}
 					if (punct) punct = false;
@@ -298,7 +330,7 @@
 				case '.': {
 					expectSequence(source, cursor, end, '..');
 					if (num !== null) {
-						thems.push({ kind: 'sequence', index: parseInt(source.substring(num, cursor))});
+						thems.push({ kind: 's', index: parseInt(source.substring(num, cursor))});
 						num = null;
 					}
 					cursor++;
@@ -321,9 +353,7 @@
 						throw Error("Unexpected numeral at position "
 							.concat(cursor, " expected punctuation."));
 					}
-					expectSequence(source, cursor, end, 'last');
-					cursor += 3
-					thems.push('last');
+					cursor = parseArrayVerb(source, cursor, end, "last", thems);
 					break;
 				}
 				case 'f': {
@@ -331,15 +361,21 @@
 						throw Error("Unexpected numeral at position "
 							.concat(cursor, " expected punctuation."));
 					}
-					expectSequence(source, cursor, end, 'first');
-					cursor += 4
-					thems.push('first');
+					cursor = parseArrayVerb(source, cursor, end, "first", thems);
+					break;
+				}
+				case 'c': {
+					if (punct) {
+						throw Error("Unexpected numeral at position "
+							.concat(cursor, " expected punctuation."));
+					}
+					cursor = parseArrayVerb(source, cursor, end, "count", thems);
 					break;
 				}
 			}
 		}
 		if (num !== null) {
-			thems.push({ kind: 'index', index: parseInt(source.substring(num, cursor))});
+			thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor))});
 		}
 		state.result.push(function(obj, accum) {
 			accum = accum || [];
@@ -347,37 +383,40 @@
 				var i = -1
 				, len = thems.length
 				, alen = obj.length
-				, s, slast
+				, j, last
 				;
 				while(++i < len) {
 					var it = thems[i];
-					if (typeof it === 'string') {
-						switch(it[0]) {
-							case 'c': {
-								accum.push(alen);
-								break;
-							}
-							case 'f': {
-								if (alen) {
-									accum.push(obj[0]);
-								}
-								break;
-							}
-							case 'l': {
-								if (alen) {
-									accum.push(obj[alen - 1]);
-								}
-								break;
-							}
+					switch(it.kind) {
+						case 'c': {
+							accum.push(alen);
+							break;
 						}
-					} else {
-						if (it.index < alen) {
-							accum.push(obj[it.index]);
-							if (it.kind === 'sequence') {
-								s = it.index;
-								slast = (++i < len) ? thems[i].index : alen - 1;
-								while(++s <= slast) {
-									accum.push(obj[s]);
+						case 'f': {
+							j = -1;
+							while(++j < it.index && j < alen) {
+								accum.push(obj[j]);
+							}
+							break;
+						}
+						case 'l': {
+							j = alen;
+							last = alen - it.index;
+							while(--j >= last && j > 0) {
+								accum.push(obj[j]);
+							}
+							break;
+						}
+						case 'i':
+						case 's': {
+							if (it.index < alen) {
+								accum.push(obj[it.index]);
+								if (it.kind === 's') {
+									j = it.index;
+									last = (++i < len) ? thems[i].index : alen - 1;
+									while(++j <= last) {
+										accum.push(obj[j]);
+									}
 								}
 							}
 						}
@@ -449,7 +488,6 @@
 					break;
 				}
 				case '@': {
-					expect(source, state, '@');
 					state.cursor += 1;
 					parseUserSelector(source,state);
 					break;
