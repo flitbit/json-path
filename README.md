@@ -7,6 +7,48 @@ You may be looking for the prior work [found here](http://goessner.net/articles/
 
 **Warning:** This is a work in progress - I am actively adding selection expressions and have yet to optimize, but as I use it in a few other projects I went ahead and made it available via `npm`.
 
+## Example
+```javascript
+var jpath = require('..')
+, http = require('http')
+, util = require('util')
+;
+
+var feed = "http://api.flickr.com/services/feeds/photos_public.gne?tags=surf,pipeline&tagmode=all&format=json&jsoncallback=processResponse"
+;
+
+function processResponse(json) {
+	var p = jpath.create("#/items[first(3)][@]")
+	var res = p.resolve(json, function(obj, accum) {
+		accum.push({
+			title: obj.title,
+			author: obj.author,
+			media: obj.media.m
+		});
+		return accum;
+	});
+
+	console.log( util.inspect(res, false, 5) );
+}
+
+http.get(feed, function(res) {
+	console.log("Got response: " + res.statusCode);
+
+	var data = '';
+
+	res.on('data', function (chunk){
+		data += chunk;
+	});
+
+	res.on('end',function(){
+		// result is formatted as jsonp... this is for illustration only.
+		eval(data);
+	})
+}).on('error', function(e) {
+	console.log("Got error: " + e.message);
+});
+```
+
 ## Installation
 
 [node.js](http://nodejs.org)
@@ -135,4 +177,43 @@ expect(res).to.have.length(2);
 ```
 
 The example above illustrates that a user-defined selection given to `resolve` is used by JSON-Path in place of the `@`.
+
+When you need multiple user-defined selections, use an object with function properties and refer to each function by name:
+
+```javascript
+var jpath = require('json-path')
+, expect = require('expect.js')
+, data = require('./example-data')
+
+var p = jpath.create("#/store/book[*][@lt10][@format]");
+
+var res = p.resolve(data, {
+
+	lt10: function(obj, accum) {
+		if (typeof obj.price === 'number' && obj.price < 10)
+			accum.push(obj);
+		return accum;
+	},
+
+	format: function(obj, accum) {
+		accum.push(obj.title.concat(
+			": $", obj.price
+			));
+		return accum;
+	}
+
+});
+
+// Expect the result to have formatted strings for
+// the twb books priced under $10...
+expect(res).to.contain("Sayings of the Century: $8.95");
+expect(res).to.contain("Moby Dick: $8.99");
+expect(res).to.have.length(2);
+```
+
+## Use
+
+
+
+
 
