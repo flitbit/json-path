@@ -84,3 +84,46 @@ var data = {
 
 In this data, the property names `my[` and `example]` are valid but would cuase ambiguities for either the parser or the processing of statements. In these cases, you must use the URI fragment identifier representation described in [RFC 6901 Section 6](http://tools.ietf.org/html/rfc6901). For instance, to access `data['my['].contrived['example]'].your` you would need the path `#/my%5B/contrived/example%5D/your`.
 
+### More Power
+
+JSON-Path becomes more powerful with a few additional types of statements:
+
+Statement | Meaning
+--- | ---
+`..` | Makes an exhaustive descent, executing the next statement against each branch of the object-graph.
+`@` | Uses the user-supplied function to select or filter data.
+
+Consider the following examples using the same preceding data:
+
+Path | Result
+___ | ___
+`/store[..]/price` | Selects all prices, from books and the bicycle.
+`../isbn` | Selects all ISBN numbers, wherever they are in the structure.
+`/store/book[*][@]` | Selects all books, providing each to the user-supplied selection method.
+
+**User Supplied Selection Methods**
+
+Rather than introduce an expression syntax, JSON-Path supports the use of user-supplied selections. Mindful of the preceding data, consider the following code:
+
+```javascript
+var jpath = require('json-path')
+, expect  = require('expect.js')
+, data    = require('./example-data')
+
+var p = jpath.create("#/store/book[*][@]");
+
+var res = p.resolve(data, function(obj, accum) {
+  if (typeof obj.price === 'number' && obj.price < 10)
+    accum.push(obj);
+  return accum;
+});
+
+// Expect the result to have the two books priced under $10...
+expect(res).to.contain(data["store"]["book"][0]);
+expect(res).to.contain(data["store"]["book"][2]);
+expect(res).to.have.length(2);
+
+```
+
+The example above illustrates that a user-defined selection given to `resolve` is used by JSON-Path in place of the `@`.
+

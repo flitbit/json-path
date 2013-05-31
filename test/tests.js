@@ -540,6 +540,17 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
+		describe('the path ../isbn', function() {
+			it('selects all ISBNs, wherever they are in the structure', function() {
+				var p = JsonPath.create("../isbn");
+				var res = p.resolve(data);
+				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
+				expect(res).to.contain(data["store"]["book"][3]["isbn"]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+
 		describe('path with user-supplied selector #/store/book[*][@]', function() {
 			it('selects the books with prices greater than ten', function() {
 				var p = JsonPath.create("#/store/book[*][@]"),
