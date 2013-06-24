@@ -5,29 +5,20 @@ JSON-Path utility (XPath for JSON) for nodejs and modern browsers.
 
 You may be looking for the prior work [found here](http://goessner.net/articles/JsonPath/). This implementation is a new JSON-Path syntax building on [JSON Pointer (RFC 6901)](http://tools.ietf.org/html/rfc6901) in order to ensure that any valid JSON pointer is also valid JSON-Path.
 
-**Warning:** This is a work in progress - I am actively adding selection expressions and have yet to optimize, but as I use it in a few other projects I went ahead and made it available via `npm`.
+**Warning:** This is a work in progress - I am actively adding selection expressions and have yet to optimize, but as I use it in a few other projects I went ahead and made it available via `npm`. Until I take the **alpha** tag off you should look to the examples and test to understand the selection path syntax.
 
 ## Example
 ```javascript
-var jpath = require('..')
+var jpath = require('json-path')
 , http = require('http')
 , util = require('util')
 ;
 
-var feed = "http://api.flickr.com/services/feeds/photos_public.gne?tags=surf,pipeline&tagmode=all&format=json&jsoncallback=processResponse"
+var feed = "http://api.flickr.com/services/feeds/photos_public.gne?tags=beach,pipeline&tagmode=all&format=json&jsoncallback=processResponse"
 ;
 
 function processResponse(json) {
-	var p = jpath.create("#/items[first(3)][@]")
-	var res = p.resolve(json, function(obj, accum) {
-		accum.push({
-			title: obj.title,
-			author: obj.author,
-			media: obj.media.m
-		});
-		return accum;
-	});
-
+	var res = jpath.resolve(json, "#/items[first(3)]take(/title,/author,media=/media/m)")
 	console.log( util.inspect(res, false, 5) );
 }
 
@@ -150,6 +141,7 @@ Path | Result
 --- | ---
 `/store[..]/price` | Selects all prices, from books and the bicycle.
 `../isbn` | Selects all ISBN numbers, wherever they are in the structure.
+`/store/book[*]take(/author,/title)` | Selects author and title from each book.
 `/store/book[*][@]` | Selects all books, providing each to the user-supplied selection method.
 
 **User Supplied Selection Methods**
@@ -176,9 +168,9 @@ expect(res).to.have.length(2);
 
 ```
 
-The example above illustrates that a user-defined selection given to `resolve` is used by JSON-Path in place of the `@`.
+The example above illustrates user-defined selection given to `resolve` used in place of the `@`.
 
-When you need multiple user-defined selections, use an object with function properties and refer to each function by name:
+To use more than one user-defined selections, refer to selection functions by name and provide implementations when resolving the path:
 
 ```javascript
 var jpath = require('json-path')

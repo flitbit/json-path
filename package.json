@@ -1,6 +1,6 @@
 {
 	"name": "json-path",
-	"version": "0.0.1",
+	"version": "0.1.1",
 	"author": "Phillip Clark <phillip@flitbit.com>",
 	"description": "JSON-Path utility (XPath for JSON) for nodejs and modern browsers.",
 	"main": "index.js",

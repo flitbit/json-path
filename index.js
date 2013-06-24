@@ -2,7 +2,9 @@
 	"use strict";
 
 	var $scope
-	, conflict, conflictResolution = [];
+	, conflict
+	, conflictResolution = []
+	;
 	if (typeof global == 'object' && global) {
 		$scope = global;
 		conflict = global.JsonPath;
@@ -272,6 +274,46 @@
 		return state.result;
 	}
 
+	function parseTake(source, state) {
+		var cursor = state.cursor
+		, len = source.length
+		, end = source.indexOf(')', cursor)
+		;
+		expectSequence(source, cursor, end, 'take(');
+		cursor += 5;
+		var them = source.slice(cursor, end).split(',')
+		, i = -1
+		, len = them.length
+		, it
+		;
+		while(++i < len) {
+			it = them[i].split('=');
+			if (it.length === 1) {
+				it = $scope.JsonPointer.create(it[0]);
+				it = { name: it.path[it.path.length - 1], ptr: it };
+			} else if (it.length === 2) {
+				it = { name: it[0], ptr: $scope.JsonPointer.create(it[1]) };
+			} else {
+				throw Error("Invalid `take` expression")
+			}
+			cursor += them[i].length;
+			them[i] = it;
+		}
+		state.result.push(function(obj, accum) {
+			accum = accum || [];
+			var it = {}
+			, i = -1
+			, len = them.length
+			;
+			while(++i < len) {
+				it[them[i].name] = them[i].ptr.get(obj);
+			}
+			accum.push(it);
+			return accum;
+		});
+		state.cursor = end;
+	}
+
 	function expectInteger(source, cursor, end) {
 		var c = cursor;
 		while(source[c] >= '0' && source[c] <= '9') c++;
@@ -485,6 +527,10 @@
 				}
 				case 'c': {
 					parseSelectByIndex(source, state);
+					break;
+				}
+				case 't': {
+					parseTake(source, state);
 					break;
 				}
 				case '@': {

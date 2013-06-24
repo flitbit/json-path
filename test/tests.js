@@ -550,6 +550,51 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
+		describe('the path #/store/book[*][take(/author,/title)]', function() {
+			it('selects from each book the author and title', function() {
+				p = JsonPath.parseSelector("..#/book[*][take(/author,/title)]");
+				res = JsonPath.executeSelectors(data, p);
+				expect(res[0]).to.eql({
+					author: "Nigel Rees",
+					title: "Sayings of the Century"
+				});
+				expect(res[1]).to.eql({
+					author: "Evelyn Waugh",
+					title: "Sword of Honour"
+				});
+				expect(res[2]).to.eql({
+					author: "Herman Melville",
+					title: "Moby Dick"
+				});
+				expect(res[3]).to.eql({
+					author: "J. R. R. Tolkien",
+					title: "The Lord of the Rings"
+				});
+			});
+		});
+
+		describe('the path #/store/book[*]take(/title,cost=/price)', function() {
+			it('selects from each book the title and price as cost', function() {
+				p = JsonPath.parseSelector("..#/book[*]take(/title,cost=/price)");
+				res = JsonPath.executeSelectors(data, p);
+				expect(res[0]).to.eql({
+					title: "Sayings of the Century",
+					cost: 8.95
+				});
+				expect(res[1]).to.eql({
+					title: "Sword of Honour",
+					cost: 12.99
+				});
+				expect(res[2]).to.eql({
+					title: "Moby Dick",
+					cost: 8.99
+				});
+				expect(res[3]).to.eql({
+					title: "The Lord of the Rings",
+					cost: 22.99
+				});
+			});
+		});
 
 		describe('path with user-supplied selector #/store/book[*][@]', function() {
 			it('selects the books with prices greater than ten', function() {
