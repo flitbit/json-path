@@ -8,6 +8,8 @@ You may be looking for the prior work [found here](http://goessner.net/articles/
 **Warning:** This is a work in progress - I am actively adding selection expressions and have yet to optimize, but as I use it in a few other projects I went ahead and made it available via `npm`. Until I take the **alpha** tag off you should look to the examples and test to understand the selection path syntax.
 
 ## Example
+
+[flikr-example-2.js](https://github.com/flitbit/json-path/blob/master/examples/flikr-example-2.js)
 ```javascript
 var jpath = require('json-path')
 , http = require('http')
@@ -124,7 +126,7 @@ var data = {
 };
 ```
 
-In this data, the property names `my[` and `example]` are valid but would cuase ambiguities for either the parser or the processing of statements. In these cases, you must use the URI fragment identifier representation described in [RFC 6901 Section 6](http://tools.ietf.org/html/rfc6901). For instance, to access `data['my['].contrived['example]'].your` you would need the path `#/my%5B/contrived/example%5D/your`.
+In this data, the property names `my[` and `example]` are valid but would cuase ambiguities for either the parser or the processing of statements. In these cases, you must use the URI fragment identifier representation described in [RFC 6901 Section 6](http://tools.ietf.org/html/rfc6901#section-6). For instance, to access `data['my['].contrived['example]'].your` you would need the path `#/my%5B/contrived/example%5D/your`.
 
 ### More Power
 
@@ -133,6 +135,7 @@ JSON-Path becomes more powerful with a few additional types of statements:
 Statement | Meaning
 --- | ---
 `..` | Makes an exhaustive descent, executing the next statement against each branch of the object-graph.
+`take(s0,s1,...)` | Takes one or more items from the structure, each specified as a [JSON Pointer](http://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-09).
 `@` | Uses the user-supplied function to select or filter data.
 
 Consider the following examples using the same preceding data:
@@ -146,7 +149,7 @@ Path | Result
 
 **User Supplied Selection Methods**
 
-Rather than introduce an expression syntax, JSON-Path supports the use of user-supplied selections. Mindful of the preceding data, consider the following code:
+JSON-Path supports the use of user-supplied selections - which will need to fill in until the expression syntax is completed. Mindful of the preceding data, consider the following code:
 
 ```javascript
 var jpath = require('json-path')
@@ -202,10 +205,3 @@ expect(res).to.contain("Sayings of the Century: $8.95");
 expect(res).to.contain("Moby Dick: $8.99");
 expect(res).to.have.length(2);
 ```
-
-## Use
-
-
-
-
-
