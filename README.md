@@ -8,6 +8,8 @@ You may be looking for the prior work [found here](http://goessner.net/articles/
 **Warning:** This is a work in progress - I am actively adding selection expressions and have yet to optimize, but as I use it in a few other projects I went ahead and made it available via `npm`. Until I take the **alpha** tag off you should look to the examples and test to understand the selection path syntax.
 
 ## Example
+
+[flikr-example-2.js](https://github.com/flitbit/json-path/blob/master/examples/flikr-example-2.js)
 ```javascript
 var jpath = require('json-path')
 , http = require('http')

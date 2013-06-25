@@ -470,6 +470,36 @@
 		state.cursor = end - 1;
 	}
 
+	var operators = [
+	{ op: 'eq', kind: 'binary', human: 'equal' },
+	{ op: 'neq', kind: 'binary', human: 'not equal' },
+	{ op: 'gt', kind: 'binary', human: 'greater than' },
+	{ op: 'gte', kind: 'binary', human: 'greater than or equal' },
+	{ op: 'lt', kind: 'binary', human: 'less than' },
+	{ op: 'lte', kind: 'binary', human: 'less than or equal' },
+	{ op: 'matches', kind: 'binary', human: 'regular expression' },
+	{ op: 'btw', kind: 'tertiary', human: 'between' },
+	{ op: 'in', kind: 'binary', human: 'in' },
+	{ op: 'not', kind: 'unary', human: 'not' },
+	{ op: 'and', kind: 'binary', human: 'and' },
+	{ op: 'or', kind: 'binary', human: 'or' },
+	{ op: 'has', kind: 'unary', human: 'has' },
+	{ op: 'is', kind: 'binary', human: 'is' }
+	];
+
+	function parseExpression(source, state) {
+		var cursor = state.cursor - 1
+		, len = source.length
+		, end = source.indexOf(']', state.cursor)
+		, thems = []
+		if (end < cursor) {
+			end = len;
+		}
+		while(++cursor < end) {
+
+		}
+	}
+
 	function performParse(source, state) {
 		dbc([typeof source === "string"], "Selector must be a string.");
 		if (source.length === 0) return [];

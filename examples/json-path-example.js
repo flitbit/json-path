@@ -4,38 +4,7 @@ jpath      = require('..')
 ;
 
 // From: http://goessner.net/articles/JsonPath/
-var data = {
-  store: {
-    book: [
-      { category: "reference",
-        author: "Nigel Rees",
-        title: "Sayings of the Century",
-        price: 8.95
-      },
-      { category: "fiction",
-        author: "Evelyn Waugh",
-        title: "Sword of Honour",
-        price: 12.99
-      },
-      { category: "fiction",
-        author: "Herman Melville",
-        title: "Moby Dick",
-        isbn: "0-553-21311-3",
-        price: 8.99
-      },
-      { category: "fiction",
-        author: "J. R. R. Tolkien",
-        title: "The Lord of the Rings",
-        isbn: "0-395-19395-8",
-        price: 22.99
-      }
-    ],
-    bicycle: {
-      color: "red",
-      price: 19.95
-    }
-  }
-};
+var data = require('./example-data.json')
 
 // jpath preamble is $
 //   -- path segments are interpreted the same as JSON Pointer,
@@ -105,6 +74,7 @@ expect(res).to.contain(data.store.book[1]);
 p = jpath.parseSelector("[..#/book[*][#/isbn]]");
 res = jpath.executeSelectors(data, p);
 
+
 // select author and title from any book
 p = jpath.parseSelector("..#/book[*][take(/author,/title)]");
 res = jpath.executeSelectors(data, p);
@@ -146,7 +116,6 @@ expect(res[3]).to.eql({
 });
 
 // select books priced more than 10 via a selector fn
-// p = jpath.parseSelector("[..#/book[*][!{#/price < 10 || !exists(#/author)}][@myfn]]");
 p = jpath.parseSelector("[..#/book[*][@myfn]]");
 res = jpath.executeSelectors(data, p, {
   myfn: function(obj, accum, sel) {
@@ -181,4 +150,5 @@ expect(res).to.contain(data["store"]["book"][0]);
 expect(res).to.contain(data["store"]["book"][2]);
 expect(res).to.have.length(2);
 
-// p = jpath.parseSelector("[..#/book[*][{#/price >= 10}]]");
+p = jpath.parseSelector("../book[has /isbn and /price lt 10]");
+expect(res).to.contain(data["store"]["book"][2]);
