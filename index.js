@@ -250,7 +250,11 @@
  				if (n.length === 0 && typeof sel === 'function') {
  					target = sel;
 				} else if (typeof sel === 'object' && sel) {
-					target = sel[n];
+                    if (!sel[n] && sel.RESOLVER) {
+						target = sel.RESOLVER(n);
+                    } else {
+						target = sel[n];
+                    }
 				}
 				if (!target) {
 					throw new Error("Missing user-supplied function: `"

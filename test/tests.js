@@ -624,6 +624,24 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
+		describe('path with user-supplied selector and function lookup #/store/book[*][@gt10]', function() {
+			it('selects the books with prices greater than ten', function() {
+				var p = JsonPath.create("#/store/book[*][@gt10]"),
+                resolver = function (fName) {
+                            return function(obj, accum, sel) {
+                                    if (obj.price && obj.price < 10)
+                                        accum.push(obj);
+                                    return accum;
+                            }};
+
+				res = p.resolve(data, {RESOLVER: resolver});
+
+				expect(res).to.contain(data["store"]["book"][0]);
+				expect(res).to.contain(data["store"]["book"][2]);
+				expect(res).to.have.length(2);
+			});
+		});
+
 		describe('path with user-supplied selector followed by further path #/store/book[*][@gt10]/category', function() {
 			it('selects the books with prices greater than ten', function() {
 				var p = JsonPath.create("#/store/book[*][@gt10]/category"),
