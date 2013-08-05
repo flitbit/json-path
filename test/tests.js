@@ -521,7 +521,7 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 		});
 
 		describe('the path /store/book[*]/isbn', function() {
-			it('selects the last 2 books', function() {
+			it('selects the ISBNs of the 2 books with ISBNs', function() {
 				var p = JsonPath.create("/store/book[*]/isbn"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
@@ -531,7 +531,7 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 		});
 
 		describe('the path #/store/book[*]#/isbn', function() {
-			it('selects the last 2 books', function() {
+			it('selects the ISBNs of the 2 books with ISBNs', function() {
 				var p = JsonPath.create("#/store/book[*]#/isbn"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
@@ -618,6 +618,24 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 						accum.push(obj);
 					return accum;
 				}});
+				expect(res).to.contain(data["store"]["book"][0]);
+				expect(res).to.contain(data["store"]["book"][2]);
+				expect(res).to.have.length(2);
+			});
+		});
+
+		describe('path with user-supplied selector and function lookup #/store/book[*][@gt10]', function() {
+			it('selects the books with prices greater than ten', function() {
+				var p = JsonPath.create("#/store/book[*][@gt10]"),
+                resolver = function (fName) {
+                            return function(obj, accum, sel) {
+                                    if (obj.price && obj.price < 10)
+                                        accum.push(obj);
+                                    return accum;
+                            }};
+
+				res = p.resolve(data, {RESOLVER: resolver});
+
 				expect(res).to.contain(data["store"]["book"][0]);
 				expect(res).to.contain(data["store"]["book"][2]);
 				expect(res).to.have.length(2);
