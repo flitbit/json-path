@@ -521,7 +521,7 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 		});
 
 		describe('the path /store/book[*]/isbn', function() {
-			it('selects the last 2 books', function() {
+			it('selects the ISBNs of the 2 books with ISBNs', function() {
 				var p = JsonPath.create("/store/book[*]/isbn"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
@@ -531,7 +531,7 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 		});
 
 		describe('the path #/store/book[*]#/isbn', function() {
-			it('selects the last 2 books', function() {
+			it('selects the ISBNs of the 2 books with ISBNs', function() {
 				var p = JsonPath.create("#/store/book[*]#/isbn"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
