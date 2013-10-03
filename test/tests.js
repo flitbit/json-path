@@ -1,13 +1,18 @@
+/*jshint laxcomma: true*/
+/*globals describe, it*/
+
 if (typeof require === 'function') {
 	var expect = require('expect.js'),
 	JsonPath = require('..')
 	;
 }
 
-describe('JSON-path references resolve all valid JSON Pointers', function() {
+var path = JsonPath;
+
+describe('JSON-path references resolve all valid JSON Pointers', function () {
 	'use strict';
 
-	describe('when working with the example data from the rfc', function() {
+	describe('when working with the example data from the rfc', function () {
 		var data = {
 			"foo":      ["bar", "baz"],
 			"":         0,
@@ -21,265 +26,265 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			"m~n":      8
 		};
 
-		describe('with a JSON pointer to the root ()', function() {
-			var p = JsonPath.create('');
+		describe('with a JSON pointer to the root ()', function () {
+			var p = path.create('');
 
-			it('#resolve should resolve to the object itself', function() {
+			it('#resolve should resolve to the object itself', function () {
 				expect(p.resolve(data)).to.contain(data);
 			});
 		});
 
-		describe('a URI fragment identfier to the root #', function() {
-			var p = JsonPath.create('#');
+		describe('a URI fragment identfier to the root #', function () {
+			var p = path.create('#');
 
-			it('#resolve should resolve to the object itself', function() {
+			it('#resolve should resolve to the object itself', function () {
 				expect(p.resolve(data)).to.contain(data);
 			});
 
 		});
 
-		describe('with a JSON pointer of (/foo)', function() {
-			var p = JsonPath.create('/foo');
+		describe('with a JSON pointer of (/foo)', function () {
+			var p = path.create('/foo');
 
-			it('#resolve should resolve to data["foo"]', function() {
+			it('#resolve should resolve to data["foo"]', function () {
 				expect(p.resolve(data)).to.contain(data["foo"]);
 			});
 
 		});
 
-		describe('a URI fragment identifier of (#/foo)', function() {
-			var p = JsonPath.create('#/foo');
+		describe('a URI fragment identifier of (#/foo)', function () {
+			var p = path.create('#/foo');
 
-			it('#resolve should resolve to data["foo"]', function() {
+			it('#resolve should resolve to data["foo"]', function () {
 				expect(p.resolve(data)).to.contain(data["foo"]);
 			});
 
 		});
 
-		describe('with a JSON pointer of (/foo/0)', function() {
-			var p = JsonPath.create('/foo/0');
+		describe('with a JSON pointer of (/foo/0)', function () {
+			var p = path.create('/foo/0');
 
-			it('#resolve should resolve to data.foo[0]', function() {
+			it('#resolve should resolve to data.foo[0]', function () {
 				expect(p.resolve(data)).to.contain(data.foo[0]);
 			});
 
 		});
 
-		describe('a URI fragment identifier of (#/foo/0)', function() {
-			var p = JsonPath.create('#/foo/0');
+		describe('a URI fragment identifier of (#/foo/0)', function () {
+			var p = path.create('#/foo/0');
 
-			it('#resolve should resolve to data.foo[0]', function() {
+			it('#resolve should resolve to data.foo[0]', function () {
 				expect(p.resolve(data)).to.contain(data.foo[0]);
 			});
 
 		});
 
-		describe('with a JSON pointer of (/)', function() {
-			var p = JsonPath.create('/');
+		describe('with a JSON pointer of (/)', function () {
+			var p = path.create('/');
 
-			it('#resolve should resolve to data[""]', function() {
+			it('#resolve should resolve to data[""]', function () {
 				expect(p.resolve(data)).to.contain(data[""]);
 			});
 
 		});
 
-		describe('a URI fragment identifier of (#/)', function() {
-			var p = JsonPath.create('#/');
+		describe('a URI fragment identifier of (#/)', function () {
+			var p = path.create('#/');
 
-			it('#resolve should resolve to data[""]', function() {
+			it('#resolve should resolve to data[""]', function () {
 				expect(p.resolve(data)).to.contain(data[""]);
 			});
 
 
 		});
 
-		describe('with a JSON pointer of (/a~1b)', function() {
-			var p = JsonPath.create('/a~1b');
+		describe('with a JSON pointer of (/a~1b)', function () {
+			var p = path.create('/a~1b');
 
-			it('#resolve should resolve to data["a/b"]', function() {
+			it('#resolve should resolve to data["a/b"]', function () {
 				expect(p.resolve(data)).to.contain(data["a/b"]);
 			});
 
 
 		});
 
-		describe('a URI fragment identifier of (#/a~1b)', function() {
-			var p = JsonPath.create('#/a~1b');
+		describe('a URI fragment identifier of (#/a~1b)', function () {
+			var p = path.create('#/a~1b');
 
-			it('#resolve should resolve to data["a/b"]', function() {
+			it('#resolve should resolve to data["a/b"]', function () {
 				expect(p.resolve(data)).to.contain(data["a/b"]);
 			});
 
 
 		});
 
-		describe('with a JSON pointer of (/c%d)', function() {
-			var p = JsonPath.create('/c%d');
+		describe('with a JSON pointer of (/c%d)', function () {
+			var p = path.create('/c%d');
 
-			it('#resolve should resolve to data["c%d"]', function() {
+			it('#resolve should resolve to data["c%d"]', function () {
 				expect(p.resolve(data)).to.contain(data["c%d"]);
 			});
 
 
 		});
 
-		describe('a URI fragment identifier of (#/c%25d)', function() {
-			var p = JsonPath.create('#/c%25d');
+		describe('a URI fragment identifier of (#/c%25d)', function () {
+			var p = path.create('#/c%25d');
 
-			it('#resolve should resolve to data["c%d"]', function() {
+			it('#resolve should resolve to data["c%d"]', function () {
 				expect(p.resolve(data)).to.contain(data["c%d"]);
 			});
 
 
 		});
 
-		describe('with a JSON pointer of (/e^f)', function() {
-			var p = JsonPath.create('/e^f');
+		describe('with a JSON pointer of (/e^f)', function () {
+			var p = path.create('/e^f');
 
-			it('#resolve should resolve to data["e^f"]', function() {
+			it('#resolve should resolve to data["e^f"]', function () {
 				expect(p.resolve(data)).to.contain(data["e^f"]);
 			});
 
 
 		});
 
-		describe('a URI fragment identifier of (#/e%5Ef)', function() {
-			var p = JsonPath.create('#/e%5Ef');
+		describe('a URI fragment identifier of (#/e%5Ef)', function () {
+			var p = path.create('#/e%5Ef');
 
-			it('#resolve should resolve to data["e^f"]', function() {
+			it('#resolve should resolve to data["e^f"]', function () {
 				expect(p.resolve(data)).to.contain(data["e^f"]);
 			});
 
 
 		});
 
-		describe('with a JSON pointer of (/g|h)', function() {
-			var p = JsonPath.create('/g|h');
+		describe('with a JSON pointer of (/g|h)', function () {
+			var p = path.create('/g|h');
 
-			it('#resolve should resolve to data["g|h"]', function() {
+			it('#resolve should resolve to data["g|h"]', function () {
 				expect(p.resolve(data)).to.contain(data["g|h"]);
 			});
 
 
 		});
 
-		describe('a URI fragment identifier of (#/g%7Ch)', function() {
-			var p = JsonPath.create('#/g%7Ch');
+		describe('a URI fragment identifier of (#/g%7Ch)', function () {
+			var p = path.create('#/g%7Ch');
 
-			it('#resolve should resolve to data["g|h"]', function() {
+			it('#resolve should resolve to data["g|h"]', function () {
 				expect(p.resolve(data)).to.contain(data["g|h"]);
 			});
 
 
 		});
 
-		describe('with a JSON pointer of (/i\\j)', function() {
-			var p = JsonPath.create('/i\\j');
+		describe('with a JSON pointer of (/i\\j)', function () {
+			var p = path.create('/i\\j');
 
-			it('#resolve should resolve to data["i\\j"]', function() {
+			it('#resolve should resolve to data["i\\j"]', function () {
 				expect(p.resolve(data)).to.contain(data["i\\j"]);
 			});
 
 
 		});
 
-		describe('a URI fragment identifier of (#/i%5Cj)', function() {
-			var p = JsonPath.create('#/i%5Cj');
+		describe('a URI fragment identifier of (#/i%5Cj)', function () {
+			var p = path.create('#/i%5Cj');
 
-			it('#resolve should resolve to data["i\\j"]', function() {
+			it('#resolve should resolve to data["i\\j"]', function () {
 				expect(p.resolve(data)).to.contain(data["i\\j"]);
 			});
 
 
 		});
 
-		describe('with a JSON pointer of (/k\"l)', function() {
-			var p = JsonPath.create('/k\"l');
+		describe('with a JSON pointer of (/k\"l)', function () {
+			var p = path.create('/k\"l');
 
-			it('#resolve should resolve to data["k\"l"]', function() {
+			it('#resolve should resolve to data["k\"l"]', function () {
 				expect(p.resolve(data)).to.contain(data["k\"l"]);
 			});
 
 
 		});
 
-		describe('a URI fragment identifier of (#/k%22l)', function() {
-			var p = JsonPath.create('#/k%22l');
+		describe('a URI fragment identifier of (#/k%22l)', function () {
+			var p = path.create('#/k%22l');
 
-			it('#resolve should resolve to data["k\"l"]', function() {
+			it('#resolve should resolve to data["k\"l"]', function () {
 				expect(p.resolve(data)).to.contain(data["k\"l"]);
 			});
 
 
 		});
 
-		describe('with a JSON pointer of (/ )', function() {
-			var p = JsonPath.create('/ ');
+		describe('with a JSON pointer of (/ )', function () {
+			var p = path.create('/ ');
 
-			it('#resolve should resolve to data[" "]', function() {
+			it('#resolve should resolve to data[" "]', function () {
 				expect(p.resolve(data)).to.contain(data[" "]);
 			});
 
 
 		});
 
-		describe('a URI fragment identifier of (#/%20)', function() {
-			var p = JsonPath.create('#/%20');
+		describe('a URI fragment identifier of (#/%20)', function () {
+			var p = path.create('#/%20');
 
-			it('#resolve should resolve to data[" "]', function() {
+			it('#resolve should resolve to data[" "]', function () {
 				expect(p.resolve(data)).to.contain(data[" "]);
 			});
 
 
 		});
 
-		describe('with a JSON pointer of (/m~0n)', function() {
-			var p = JsonPath.create('/m~0n');
+		describe('with a JSON pointer of (/m~0n)', function () {
+			var p = path.create('/m~0n');
 
-			it('#resolve should resolve to data["m~n"]', function() {
+			it('#resolve should resolve to data["m~n"]', function () {
 				expect(p.resolve(data)).to.contain(data["m~n"]);
 			});
 		});
 
-		describe('a URI fragment identifier of (#/m~0n)', function() {
-			var p = JsonPath.create('#/m~0n');
+		describe('a URI fragment identifier of (#/m~0n)', function () {
+			var p = path.create('#/m~0n');
 
-			it('#resolve should resolve to data["m~n"]', function() {
+			it('#resolve should resolve to data["m~n"]', function () {
 				expect(p.resolve(data)).to.contain(data["m~n"]);
 			});
 
 		});
 
-		describe('a special array pointer from draft-ietf-appsawg-json-pointer-08 (/foo/-)', function() {
-			var p = JsonPath.create('/foo/-');
+		describe('a special array pointer from draft-ietf-appsawg-json-pointer-08 (/foo/-)', function () {
+			var p = path.create('/foo/-');
 
-			it('should not resolve via #resolve', function() {
+			it('should not resolve via #resolve', function () {
 				expect(p.resolve(data)).to.be.empty();
 			});
 
 		});
 
-		describe('an invalid pointer', function() {
+		describe('an invalid pointer', function () {
 
-			it('should fail to parse', function() {
-				expect(function() {
-					JsonPath.create('a/');
+			it('should fail to parse', function () {
+				expect(function () {
+					path.create('a/');
 				}).to.throwError();
 			});
 		});
 
-		describe('an invalid URI fragment identifier', function() {
+		describe('an invalid URI fragment identifier', function () {
 
-			it('should fail to parse', function() {
-				expect(function() {
-					JsonPath.create('#a');
+			it('should fail to parse', function () {
+				expect(function () {
+					path.create('#a');
 				}).to.throwError();
 			});
 
 		});
 	});
 
-	describe('when working with complex data', function() {
+	describe('when working with complex data', function () {
 		var data = {
 			a: 1,
 			b: {
@@ -291,21 +296,21 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			f: null
 		};
 
-		it('#resolve should return an empty array when the requested element is undefined (#/g/h)', function() {
-			var p = JsonPath.create('#/g/h');
+		it('#resolve should return an empty array when the requested element is undefined (#/g/h)', function () {
+			var p = path.create('#/g/h');
 			var unk = p.resolve(data);
 			expect(unk).to.be.empty();
 		});
 
-		it('#resolve should return null when the requested element has a null value (#/f)', function() {
-			var p = JsonPath.create('#/f');
+		it('#resolve should return null when the requested element has a null value (#/f)', function () {
+			var p = path.create('#/f');
 			var unk = p.resolve(data);
 			expect(unk).to.contain(null);
 		});
 	});
 });
 
-	describe('using the data defined in prior JSON-Path work (http://goessner.net/articles/JsonPath/)', function() {
+	describe('using the data defined in prior JSON-Path work (http://goessner.net/articles/JsonPath/)', function () {
 		var data = {
 			store:
 			{
@@ -345,9 +350,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			}
 		};
 
-		describe('the path /store/book[*][/author]', function() {
-			it('selects the authors of all books', function() {
-				var p = JsonPath.create("/store/book[*][/author]");
+		describe('the path /store/book[*][/author]', function () {
+			it('selects the authors of all books', function () {
+				var p = path.create("/store/book[*][/author]");
 				var res = p.resolve(data);
 				expect(res).to.contain('Evelyn Waugh');
 				expect(res).to.contain('Nigel Rees');
@@ -357,9 +362,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path ../author', function() {
-			it('selects the authors of all books', function() {
-				var p = JsonPath.create("..#/author");
+		describe('the path ../author', function () {
+			it('selects the authors of all books', function () {
+				var p = path.create("..#/author");
 				var res = p.resolve(data);
 				expect(res).to.contain('Evelyn Waugh');
 				expect(res).to.contain('Nigel Rees');
@@ -369,9 +374,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path ..#/author', function() {
-			it('selects the authors of all books', function() {
-				var p = JsonPath.create("..#/author");
+		describe('the path ..#/author', function () {
+			it('selects the authors of all books', function () {
+				var p = path.create("..#/author");
 				var res = p.resolve(data);
 				expect(res).to.contain('Evelyn Waugh');
 				expect(res).to.contain('Nigel Rees');
@@ -381,9 +386,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path #/store[*]', function() {
-			it('selects the items of the store', function() {
-				var p = JsonPath.create("#/store[*]");
+		describe('the path #/store[*]', function () {
+			it('selects the items of the store', function () {
+				var p = path.create("#/store[*]");
 				var res = p.resolve(data);
 				expect(res).to.contain(data.store.book);
 				expect(res).to.contain(data.store.bicycle);
@@ -391,9 +396,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path #/store[..#/price]', function() {
-			it('selects the prices from all items in the store', function() {
-				var p = JsonPath.create("#/store[..#/price]"),
+		describe('the path #/store[..#/price]', function () {
+			it('selects the prices from all items in the store', function () {
+				var p = path.create("#/store[..#/price]"),
 				res = p.resolve(data);
 				expect(res).to.contain(8.95);
 				expect(res).to.contain(12.99);
@@ -404,45 +409,45 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path ../book[0]', function() {
-			it('selects the first book', function() {
-				var p = JsonPath.create("../book[0]"),
+		describe('the path ../book[0]', function () {
+			it('selects the first book', function () {
+				var p = path.create("../book[0]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][0]);
 				expect(res).to.have.length(1);
 			});
 		});
 
-		describe('the path ../book[1]', function() {
-			it('selects the second book', function() {
-				var p = JsonPath.create("../book[1]"),
+		describe('the path ../book[1]', function () {
+			it('selects the second book', function () {
+				var p = path.create("../book[1]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][1]);
 				expect(res).to.have.length(1);
 			});
 		});
 
-		describe('the path ../book[2]', function() {
-			it('selects the third book', function() {
-				var p = JsonPath.create("../book[2]"),
+		describe('the path ../book[2]', function () {
+			it('selects the third book', function () {
+				var p = path.create("../book[2]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][2]);
 				expect(res).to.have.length(1);
 			});
 		});
 
-		describe('the path ../book[3]', function() {
-			it('selects the fourth book', function() {
-				var p = JsonPath.create("../book[3]"),
+		describe('the path ../book[3]', function () {
+			it('selects the fourth book', function () {
+				var p = path.create("../book[3]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][3]);
 				expect(res).to.have.length(1);
 			});
 		});
 
-		describe('the path ../book[1, 3]', function() {
-			it('selects the second and fourth book', function() {
-				var p = JsonPath.create("../book[1, 3]"),
+		describe('the path ../book[1, 3]', function () {
+			it('selects the second and fourth book', function () {
+				var p = path.create("../book[1, 3]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][1]);
 				expect(res).to.contain(data["store"]["book"][3]);
@@ -450,9 +455,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path ../book[1..3]', function() {
-			it('selects the second thru fourth book', function() {
-				var p = JsonPath.create("../book[1..3]"),
+		describe('the path ../book[1..3]', function () {
+			it('selects the second thru fourth book', function () {
+				var p = path.create("../book[1..3]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][1]);
 				expect(res).to.contain(data["store"]["book"][2]);
@@ -461,27 +466,27 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path /store/book[last]', function() {
-			it('selects the last book', function() {
-				var p = JsonPath.create("/store/book[last]"),
+		describe('the path /store/book[last]', function () {
+			it('selects the last book', function () {
+				var p = path.create("/store/book[last]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][data.store.book.length - 1]);
 				expect(res).to.have.length(1);
 			});
 		});
 
-		describe('the path /store/book[first]', function() {
-			it('selects the first book', function() {
-				var p = JsonPath.create("/store/book[first]"),
+		describe('the path /store/book[first]', function () {
+			it('selects the first book', function () {
+				var p = path.create("/store/book[first]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][0]);
 				expect(res).to.have.length(1);
 			});
 		});
 
-		describe('the path /store/book[first, 2, last]', function() {
-			it('selects the first, third, and last book', function() {
-				var p = JsonPath.create("/store/book[first, 2, last]"),
+		describe('the path /store/book[first, 2, last]', function () {
+			it('selects the first, third, and last book', function () {
+				var p = path.create("/store/book[first, 2, last]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][0]);
 				expect(res).to.contain(data["store"]["book"][2]);
@@ -490,9 +495,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path /store/book[first(2)]', function() {
-			it('selects the first 2 books', function() {
-				var p = JsonPath.create("/store/book[first(2)]"),
+		describe('the path /store/book[first(2)]', function () {
+			it('selects the first 2 books', function () {
+				var p = path.create("/store/book[first(2)]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][0]);
 				expect(res).to.contain(data["store"]["book"][1]);
@@ -501,18 +506,18 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 		});
 
 
-		describe('the path /store/book[count]', function() {
-			it('selects the book count', function() {
-				var p = JsonPath.create("/store/book[count]"),
+		describe('the path /store/book[count]', function () {
+			it('selects the book count', function () {
+				var p = path.create("/store/book[count]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data.store.book.length);
 				expect(res).to.have.length(1);
 			});
 		});
 
-		describe('the path /store/book[last(2)]', function() {
-			it('selects the last 2 books', function() {
-				var p = JsonPath.create("/store/book[last(2)]"),
+		describe('the path /store/book[last(2)]', function () {
+			it('selects the last 2 books', function () {
+				var p = path.create("/store/book[last(2)]"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][data.store.book.length - 1]);
 				expect(res).to.contain(data["store"]["book"][data.store.book.length - 2]);
@@ -520,9 +525,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path /store/book[*]/isbn', function() {
-			it('selects the ISBNs of the 2 books with ISBNs', function() {
-				var p = JsonPath.create("/store/book[*]/isbn"),
+		describe('the path /store/book[*]/isbn', function () {
+			it('selects the ISBNs of the 2 books with ISBNs', function () {
+				var p = path.create("/store/book[*]/isbn"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
 				expect(res).to.contain(data["store"]["book"][3]["isbn"]);
@@ -530,9 +535,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path #/store/book[*]#/isbn', function() {
-			it('selects the ISBNs of the 2 books with ISBNs', function() {
-				var p = JsonPath.create("#/store/book[*]#/isbn"),
+		describe('the path #/store/book[*]#/isbn', function () {
+			it('selects the ISBNs of the 2 books with ISBNs', function () {
+				var p = path.create("#/store/book[*]#/isbn"),
 				res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
 				expect(res).to.contain(data["store"]["book"][3]["isbn"]);
@@ -540,9 +545,9 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path ../isbn', function() {
-			it('selects all ISBNs, wherever they are in the structure', function() {
-				var p = JsonPath.create("../isbn");
+		describe('the path ../isbn', function () {
+			it('selects all ISBNs, wherever they are in the structure', function () {
+				var p = path.create("../isbn");
 				var res = p.resolve(data);
 				expect(res).to.contain(data["store"]["book"][2]["isbn"]);
 				expect(res).to.contain(data["store"]["book"][3]["isbn"]);
@@ -550,10 +555,26 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path #/store/book[*][take(/author,/title)]', function() {
-			it('selects from each book the author and title', function() {
-				p = JsonPath.parseSelector("..#/book[*][take(/author,/title)]");
-				res = JsonPath.executeSelectors(data, p);
+	describe('can revert namespace using noConflict', function () {
+		path = path.noConflict();
+
+		it('conflict is restored (when applicable)', function () {
+			// In node there is no global conflict.
+			if (typeof globalConflict !== 'undefined') {
+				expect(JsonPath).to.be(globalConflict);
+			}
+		});
+
+		it('JsonPath functionality available through result of noConflict()', function () {
+			expect(path).to.have.property('parseSelector');
+		});
+	});
+
+
+		describe('the path #/store/book[*][take(/author,/title)]', function () {
+			it('selects from each book the author and title', function () {
+				p = path.parseSelector("..#/book[*][take(/author,/title)]");
+				res = path.executeSelectors(data, p);
 				expect(res[0]).to.eql({
 					author: "Nigel Rees",
 					title: "Sayings of the Century"
@@ -573,10 +594,10 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('the path #/store/book[*]take(/title,cost=/price)', function() {
-			it('selects from each book the title and price as cost', function() {
-				p = JsonPath.parseSelector("..#/book[*]take(/title,cost=/price)");
-				res = JsonPath.executeSelectors(data, p);
+		describe('the path #/store/book[*]take(/title,cost=/price)', function () {
+			it('selects from each book the title and price as cost', function () {
+				p = path.parseSelector("..#/book[*]take(/title,cost=/price)");
+				res = path.executeSelectors(data, p);
 				expect(res[0]).to.eql({
 					title: "Sayings of the Century",
 					cost: 8.95
@@ -596,10 +617,10 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('path with user-supplied selector #/store/book[*][@]', function() {
-			it('selects the books with prices greater than ten', function() {
-				var p = JsonPath.create("#/store/book[*][@]"),
-				res = p.resolve(data, function(obj, accum, sel) {
+		describe('path with user-supplied selector #/store/book[*][@]', function () {
+			it('selects the books with prices greater than ten', function () {
+				var p = path.create("#/store/book[*][@]"),
+				res = p.resolve(data, function (obj, accum, sel) {
 					if (obj.price && obj.price < 10)
 						accum.push(obj);
 					return accum;
@@ -610,10 +631,10 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('path with user-supplied selector #/store/book[*][@gt10]', function() {
-			it('selects the books with prices greater than ten', function() {
-				var p = JsonPath.create("#/store/book[*][@gt10]"),
-				res = p.resolve(data, { gt10: function(obj, accum, sel) {
+		describe('path with user-supplied selector #/store/book[*][@gt10]', function () {
+			it('selects the books with prices greater than ten', function () {
+				var p = path.create("#/store/book[*][@gt10]"),
+				res = p.resolve(data, { gt10: function (obj, accum, sel) {
 					if (obj.price && obj.price < 10)
 						accum.push(obj);
 					return accum;
@@ -624,11 +645,11 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('path with user-supplied selector and function lookup #/store/book[*][@gt10]', function() {
-			it('selects the books with prices greater than ten', function() {
-				var p = JsonPath.create("#/store/book[*][@gt10]"),
+		describe('path with user-supplied selector and function lookup #/store/book[*][@gt10]', function () {
+			it('selects the books with prices greater than ten', function () {
+				var p = path.create("#/store/book[*][@gt10]"),
                 resolver = function (fName) {
-                            return function(obj, accum, sel) {
+                            return function (obj, accum, sel) {
                                     if (obj.price && obj.price < 10)
                                         accum.push(obj);
                                     return accum;
@@ -642,10 +663,10 @@ describe('JSON-path references resolve all valid JSON Pointers', function() {
 			});
 		});
 
-		describe('path with user-supplied selector followed by further path #/store/book[*][@gt10]/category', function() {
-			it('selects the books with prices greater than ten', function() {
-				var p = JsonPath.create("#/store/book[*][@gt10]/category"),
-				res = p.resolve(data, { gt10: function(obj, accum, sel) {
+		describe('path with user-supplied selector followed by further path #/store/book[*][@gt10]/category', function () {
+			it('selects the books with prices greater than ten', function () {
+				var p = path.create("#/store/book[*][@gt10]/category"),
+				res = p.resolve(data, { gt10: function (obj, accum, sel) {
 					if (obj.price && obj.price < 10)
 						accum.push(obj);
 					return accum;

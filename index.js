@@ -1,14 +1,17 @@
-;(function(undefined) {
-	"use strict";
+/*jshint laxcomma: true*/
+/*global global, window, JsonPointer*/
+
+(function (ptr) {
+	'use strict';
 
 	var $scope
 	, conflict
 	, conflictResolution = []
 	;
-	if (typeof global == 'object' && global) {
+	if (typeof global === 'object' && global) {
 		$scope = global;
 		conflict = global.JsonPath;
-	} else if (typeof window !== 'undefined'){
+	} else if (typeof window !== 'undefined') {
 		$scope = window;
 		conflict = window.JsonPath;
 	} else {
@@ -16,24 +19,40 @@
 	}
 	if (conflict) {
 		conflictResolution.push(
-			function() {
+			function () {
 				if ($scope.JsonPath === JsonPath) {
 					$scope.JsonPath = conflict;
-					conflict = undefined;
+					conflict = null;
 				}
 			});
 	}
-	if (typeof $scope.JsonPointer === 'undefined' && typeof require === 'function') {
-		$scope.JsonPointer = require('json-ptr');
+
+	if (ptr) {
+		conflictResolution.push(
+			function (conflictPtr) {
+				if (conflictPtr) { ptr = conflictPtr; }
+			});
+	} else if (!ptr) {
+		if (typeof $scope.JsonPointer !== 'undefined') {
+			ptr = $scope.JsonPointer;
+			conflictResolution.push(
+				function (conflictPtr) {
+					if (conflictPtr) { ptr = conflictPtr; }
+				});
+		} else if (typeof require === 'function') {
+			ptr = require('json-ptr');
+		} else {
+			throw new Error('Missing JsonPointer (https://github.com/flitbit/json-ptr).');
+		}
 	}
 
 	function dbc(requirements, description) {
 		requirements = (Array.isArray(requirements)) ? requirements : [requirements];
 		var i, disposition;
-		for(i = 0; i < requirements.length; i++) {
+		for (i = 0; i < requirements.length; i++) {
 			var req = requirements[i];
 			disposition = (typeof req === 'function') ? req() : (req);
-			if(!disposition) {
+			if (!disposition) {
 				description = description || 'Failed contract requirement:'.concat(req);
 				throw new Error((typeof description === 'function') ? description() : description);
 			}
@@ -46,18 +65,19 @@
 		, j
 		, len = source.length
 		, clen = chars.length;
-		while(++i < len) {
+		while (++i < len) {
 			j = -1;
-			while(++j < clen) {
-				if (source[i] === chars[j])
+			while (++j < clen) {
+				if (source[i] === chars[j]) {
 					return i;
+				}
 			}
 		}
 		return -1;
 	}
 
 	function expectSequence(source, cursor, end, sequence) {
-		var c = cursor -1
+		var c = cursor - 1
 		, i = -1
 		, seqlen = sequence.length
 		;
@@ -65,7 +85,7 @@
 			throw new Error("Expected `"
 				.concat(sequence, "` beginning at character ", cursor, "."));
 		}
-		while(++c < end && ++i < seqlen) {
+		while (++c < end && ++i < seqlen) {
 			if (source[c] !== sequence[i]) {
 				throw new Error("Unexpected character at position "
 					.concat(c, " expected `", sequence, "` beginning at position ", cursor, "."));
@@ -80,9 +100,8 @@
 		, stack = []
 		;
 		stack.push(cursor);
-		while(++i < len) {
-			if (source[i] === openCh) {
-				stack.push(cursor);
+		while (++i < len) {
+			if (source[i] === openCh) {stack.push(cursor);
 			} else if (source[i] === closeCh) {
 				stack.pop();
 				if (stack.length === 0) {
@@ -98,7 +117,7 @@
 		return i;
 	}
 
-	function fromJsonPointer (source, state) {
+	function fromJsonPointer(source, state) {
 		var cursor = state.cursor
 		, selectors = state.result
 		, len = source.length
@@ -106,8 +125,8 @@
 		if (end < cursor) {
 			end = len;
 		}
-		var p = $scope.JsonPointer.create(source.substring(cursor, end));
-		selectors.push(function(obj, accum) {
+		var p = ptr.create(source.substring(cursor, end));
+		selectors.push(function (obj, accum) {
 			accum = accum || [];
 			var it = p.get(obj);
 			if (typeof it !== 'undefined') {
@@ -130,11 +149,11 @@
 		, i
 		, len
 		;
-		while(++s < slen && data.length) {
+		while (++s < slen && data.length) {
 			i = -1;
 			len = data.length;
 			accum = [];
-			while(++i < len) {
+			while (++i < len) {
 				accum = steps[s](data[i], accum, fn);
 			}
 			data = accum;
@@ -145,18 +164,19 @@
 	function descent(obj, steps, accum, fn) {
 		accum = accum || [];
 		var i = -1
+		, keys
 		, len
 		, data
 		;
-		if (typeof obj === 'object' && obj != null) {
+		if (typeof obj === 'object' && obj !== null) {
 			data = pipedSelect(obj, steps, fn);
 			if (data.length) {
 				accum = accum.concat(data);
 			}
 			if (!Array.isArray(obj)) {
-				var keys = Object.keys(obj)
-				, len = keys.length;
-				while(++i < len) {
+				keys = Object.keys(obj);
+				len = keys.length;
+				while (++i < len) {
 					accum = descent(obj[keys[i]], steps, accum, fn);
 				}
 			}
@@ -177,14 +197,14 @@
 
 	function selectAny(obj, accum) {
 		accum = accum || [];
-		if (typeof obj === 'object' && obj != null) {
+		if (typeof obj === 'object' && obj !== null) {
 			if (Array.isArray(obj)) {
 				accum = accum.concat(obj);
 			} else {
 				var i = -1
 				, keys = Object.keys(obj)
 				, len = keys.length;
-				while(++i < len) {
+				while (++i < len) {
 					accum.push(obj[keys[i]]);
 				}
 			}
@@ -199,13 +219,13 @@
 		, variables = {}
 		, la
 		, v
-		, infix = [];
+		, infix = []
 		;
-		while(++i < len) {
+		while (++i < len) {
 			ch = expression[i];
 			dbc([false], 'Expressions are not implemented in this version.');
-			switch(ch) {
-				case '#': {
+			switch (ch) {
+			case '#': {
 					la = expression.indexOf(' ', i);
 					if (la < i) {
 						la = len;
@@ -244,17 +264,17 @@
 			end = len;
 		}
 		var n = source.substring(cursor, end);
-		state.result.push(function(data, accum, sel) {
+		state.result.push(function (data, accum, sel) {
 			var target;
 			if (data) {
- 				if (n.length === 0 && typeof sel === 'function') {
- 					target = sel;
+				if (n.length === 0 && typeof sel === 'function') {
+					target = sel;
 				} else if (typeof sel === 'object' && sel) {
-                    if (!sel[n] && sel.RESOLVER) {
+					if (!sel[n] && sel.RESOLVER) {
 						target = sel.RESOLVER(n);
-                    } else {
+					} else {
 						target = sel[n];
-                    }
+					}
 				}
 				if (!target) {
 					throw new Error("Missing user-supplied function: `"
@@ -267,7 +287,7 @@
 		state.cursor = end - 1;
 	}
 
-	function parseSelector (source) {
+	function parseSelector(source) {
 		var state = {
 			result: [],
 			stack: [],
@@ -280,7 +300,6 @@
 
 	function parseTake(source, state) {
 		var cursor = state.cursor
-		, len = source.length
 		, end = source.indexOf(')', cursor)
 		;
 		expectSequence(source, cursor, end, 'take(');
@@ -290,26 +309,26 @@
 		, len = them.length
 		, it
 		;
-		while(++i < len) {
+		while (++i < len) {
 			it = them[i].split('=');
 			if (it.length === 1) {
-				it = $scope.JsonPointer.create(it[0]);
+				it = ptr.create(it[0]);
 				it = { name: it.path[it.path.length - 1], ptr: it };
 			} else if (it.length === 2) {
-				it = { name: it[0], ptr: $scope.JsonPointer.create(it[1]) };
+				it = { name: it[0], ptr: ptr.create(it[1]) };
 			} else {
-				throw Error("Invalid `take` expression")
+				throw new Error("Invalid `take` expression");
 			}
 			cursor += them[i].length;
 			them[i] = it;
 		}
-		state.result.push(function(obj, accum) {
+		state.result.push(function (obj, accum) {
 			accum = accum || [];
 			var it = {}
 			, i = -1
 			, len = them.length
 			;
-			while(++i < len) {
+			while (++i < len) {
 				it[them[i].name] = them[i].ptr.get(obj);
 			}
 			accum.push(it);
@@ -320,23 +339,24 @@
 
 	function expectInteger(source, cursor, end) {
 		var c = cursor;
-		while(source[c] >= '0' && source[c] <= '9') c++;
-		if (c == cursor) {
+		while (source[c] >= '0' && source[c] <= '9') { c = c + 1; }
+		if (c === cursor) {
 			throw new Error('Expected an integer at position '
 				.concat(c, '.'));
 		}
 		return c - cursor;
 	}
 
-	function parseArrayVerb(source, cursor, end, verb, thems){
+	function parseArrayVerb(source, cursor, end, verb, thems) {
 		var index = 1
-		, len;
- 		expectSequence(source, cursor, end, verb);
+		, len
+		;
+		expectSequence(source, cursor, end, verb);
 		cursor += (verb.length - 1);
 		if (source[cursor + 1] === '(') {
 			cursor += 2;
 			len = expectInteger(source, cursor, end);
-			index = parseInt(source.substring(cursor, cursor + len));
+			index = parseInt(source.substring(cursor, cursor + len), 10);
 			cursor += len;
 			expectSequence(source, cursor, end, ')');
 			++cursor;
@@ -353,66 +373,75 @@
 		, num = null
 		, punct = false
 		, thems = []
+		;
 		if (end < cursor) {
 			end = len;
 		}
-		while(++cursor < end) {
-			switch(source[cursor]) {
-				case ' ':
+		while (++cursor < end) {
+			switch (source[cursor]) {
+			case ' ':
 				if (num !== null) {
-					thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor))});
+					thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor), 10)});
 					num = null;
 					punct = true;
 				}
 				break;
-				case ',': {
+			case ',': {
 					if (num !== null) {
-						thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor))});
+						thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor), 10)});
 						num = null;
 					}
-					if (punct) punct = false;
-					break;
+					if (punct) { punct = false; }
 				}
-				case '.': {
+				break;
+			case '.': {
 					expectSequence(source, cursor, end, '..');
 					if (num !== null) {
-						thems.push({ kind: 's', index: parseInt(source.substring(num, cursor))});
+						thems.push({ kind: 's', index: parseInt(source.substring(num, cursor), 10)});
 						num = null;
 					}
 					cursor++;
-					if (punct) punct = false;
-					break;
+					if (punct) { punct = false; }
 				}
-				case '0': case '1': case '2': case '3': case '4':
-				case '5': case '6': case '7': case '8': case '9': {
+				break;
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9': {
 					if (punct) {
-						throw Error("Unexpected numeral at position "
+						throw new Error("Unexpected numeral at position "
 							.concat(cursor, " expected punctuation."));
 					}
 					if (num === null) {
 						num = cursor;
 					}
-					break;
 				}
-				case 'l': {
+				break;
+			case 'l': {
 					if (punct) {
-						throw Error("Unexpected numeral at position "
+						throw new Error("Unexpected numeral at position "
 							.concat(cursor, " expected punctuation."));
 					}
 					cursor = parseArrayVerb(source, cursor, end, "last", thems);
-					break;
 				}
-				case 'f': {
+				break;
+			case 'f': {
 					if (punct) {
-						throw Error("Unexpected numeral at position "
+						throw new Error("Unexpected numeral at position "
 							.concat(cursor, " expected punctuation."));
 					}
 					cursor = parseArrayVerb(source, cursor, end, "first", thems);
-					break;
 				}
-				case 'c': {
+				break;
+			case 'c': {
 					if (punct) {
-						throw Error("Unexpected numeral at position "
+						throw new Error("Unexpected numeral at position "
 							.concat(cursor, " expected punctuation."));
 					}
 					cursor = parseArrayVerb(source, cursor, end, "count", thems);
@@ -421,9 +450,9 @@
 			}
 		}
 		if (num !== null) {
-			thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor))});
+			thems.push({ kind: 'i', index: parseInt(source.substring(num, cursor), 10)});
 		}
-		state.result.push(function(obj, accum) {
+		state.result.push(function (obj, accum) {
 			accum = accum || [];
 			if (Array.isArray(obj)) {
 				var i = -1
@@ -431,36 +460,35 @@
 				, alen = obj.length
 				, j, last
 				;
-				while(++i < len) {
+				while (++i < len) {
 					var it = thems[i];
-					switch(it.kind) {
-						case 'c': {
-							accum.push(alen);
-							break;
-						}
-						case 'f': {
+					switch (it.kind) {
+					case 'c':
+						accum.push(alen);
+						break;
+					case 'f': {
 							j = -1;
-							while(++j < it.index && j < alen) {
+							while (++j < it.index && j < alen) {
 								accum.push(obj[j]);
 							}
-							break;
 						}
-						case 'l': {
+						break;
+					case 'l': {
 							j = alen;
 							last = alen - it.index;
-							while(--j >= last && j > 0) {
+							while (--j >= last && j > 0) {
 								accum.push(obj[j]);
 							}
-							break;
 						}
-						case 'i':
-						case 's': {
+						break;
+					case 'i':
+					case 's': {
 							if (it.index < alen) {
 								accum.push(obj[it.index]);
 								if (it.kind === 's') {
 									j = it.index;
 									last = (++i < len) ? thems[i].index : alen - 1;
-									while(++j <= last) {
+									while (++j <= last) {
 										accum.push(obj[j]);
 									}
 								}
@@ -476,78 +504,87 @@
 
 	function performParse(source, state) {
 		dbc([typeof source === "string"], "Selector must be a string.");
-		if (source.length === 0) return [];
+		if (source.length === 0) { return []; }
 		var len = source.length
 		, ch
 		;
 
-		while(++state.cursor < len) {
+		while (++state.cursor < len) {
 			ch = source[state.cursor];
-			switch(ch) {
-				case '/':
-				case '#': {
+			switch (ch) {
+			case '/':
+			case '#': {
 					fromJsonPointer(source, state);
-					break;
 				}
-				case '[': {
+				break;
+			case '[': {
 					state.stack.push(state.cursor);
-					break;
 				}
-				case ']': {
-					dbc([state.stack.length], function() {
-						return "Unexpected `]` at cursor position ".concat(state.cursor, '.');
-					});
-					state.stack.pop();
-					break;
+				break;
+			case ']': {
+					if (state.stack.length) {
+						state.stack.pop();
+					} else {
+						throw new Error("Unexpected `]` at cursor position ".concat(state.cursor, '.'));
+					}
 				}
-				case '.': {
+				break;
+			case '.': {
 					expect(source, state, '..');
 					++state.cursor;
 					prepareExhaustiveDescent(source, state);
-					break;
 				}
-				case '*': {
+				break;
+			case '*': {
 					expect(source, state, '*]');
 					state.result.push(selectAny);
-					break;
 				}
-				case '{':
-				case '!': {
+				break;
+			case '{':
+			case '!': {
 					preparePredicate(source, state);
-					break;
 				}
-				case '0': case '1': case '2': case '3': case '4':
-				case '5': case '6': case '7': case '8': case '9': {
+				break;
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9': {
 					parseSelectByIndex(source, state);
-					break;
 				}
-				case 'l': {
+				break;
+			case 'l': {
 					parseSelectByIndex(source, state);
-					break;
 				}
-				case 'f': {
+				break;
+			case 'f': {
 					parseSelectByIndex(source, state);
-					break;
 				}
-				case 'c': {
+				break;
+			case 'c': {
 					parseSelectByIndex(source, state);
-					break;
 				}
-				case 't': {
+				break;
+			case 't': {
 					parseTake(source, state);
-					break;
 				}
-				case '@': {
+				break;
+			case '@': {
 					state.cursor += 1;
-					parseUserSelector(source,state);
-					break;
+					parseUserSelector(source, state);
 				}
-				default: {
+				break;
+			default: {
 					throw new Error("Unexpected character at position ".concat(state.cursor, ": ", ch, "."));
 				}
 			}
 		}
-		dbc([!state.stack.length], function() {
+		dbc([!state.stack.length], function () {
 			return "Unexpected end; unclosed scope beginning at cursor position ".concat(state.stack.pop(), '.');
 		});
 	}
@@ -573,15 +610,22 @@
 
 	JsonPath.parseSelector = parseSelector;
 	JsonPath.executeSelectors = executeSelectors;
-	JsonPath.create = function(path) { return new JsonPath(path); }
-	JsonPath.resolve = function(data, selector, fn) {
+	JsonPath.create = function (path) { return new JsonPath(path); };
+	JsonPath.resolve = function (data, selector, fn) {
 		var path = parseSelector(selector);
 		return pipedSelect(data, path, fn);
-	}
+	};
+	JsonPath.noConflict = function (conflictPtr) {
+		if (conflictResolution) {
+			conflictResolution.forEach(function (it) { it(conflictPtr); });
+			conflictResolution = null;
+		}
+		return JsonPath;
+	};
 
-	if (typeof module != 'undefined' && module && typeof exports == 'object' && exports && module.exports === exports) {
+	if (typeof module !== 'undefined' && module && typeof exports === 'object' && exports && module.exports === exports) {
 		module.exports = JsonPath; // nodejs
 	} else {
 		$scope.JsonPath = JsonPath; // other... browser?
 	}
-}());
+}(typeof JsonPointer !== 'undefined' ? JsonPointer : null));
