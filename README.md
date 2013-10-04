@@ -205,3 +205,18 @@ expect(res).to.contain("Sayings of the Century: $8.95");
 expect(res).to.contain("Moby Dick: $8.99");
 expect(res).to.have.length(2);
 ```
+
+#### #noConflict
+
+When used in an environment that has a global namespace the only variable used is `JsonPath`. If you utilize other libraries that already occupy that name you can use the `noConflict` function to restore the obstructing value and assign `json-path` to another variable.
+
+```html
+  <!--script src="../scripts/json-ptr-0.1.1.min.js"></script-->
+  <!--script src="../releases/json-path-0.1.3.min.js"></script-->
+  <script src="../releases/json-path+json-ptr-0.1.3.min.js"></script>
+  <script>
+    // note: json-path uses json-ptr, so both are in the global namespace...
+    var ptr = JsonPointer.noConflict();
+    var path = JsonPath.noConflict(ptr);
+  </script>
+```
